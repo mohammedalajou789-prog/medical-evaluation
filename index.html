@@ -318,7 +318,7 @@
       <div class="nav-item active" onclick="showPage('sessions')" id="nav-sessions">الجلسات</div>
       <div class="nav-item" onclick="showPage('new-session')" id="nav-new-session">جلسة جديدة</div>
       <div class="nav-item" onclick="showPage('all-scores')" id="nav-all-scores" style="display:none;">جميع التقييمات</div>
-      <div class="nav-section" style="margin-top:12px;">الإدارة</div>
+      <div class="nav-section" style="margin-top:12px; display:none;" id="nav-section-admin">الإدارة</div>
       <div class="nav-item" onclick="showPage('manage-admins')" id="nav-manage-admins" style="display:none;">إدارة الأدمنز</div>
     </div>
 
@@ -385,7 +385,10 @@
       <div class="page" id="page-all-scores">
         <div class="page-header">
           <div class="page-title">جميع التقييمات</div>
-          <button class="btn btn-success btn-sm" onclick="exportExcel()">⬇ تصدير Excel</button>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-ghost btn-sm" onclick="exportStudents()">⬇ قائمة الطلبة</button>
+            <button class="btn btn-success btn-sm" onclick="exportExcel()">⬇ تصدير التقييمات</button>
+          </div>
         </div>
         <!-- Filters -->
         <div class="card" style="padding:16px;">
@@ -503,6 +506,7 @@ async function initApp() {
     roleEl.classList.add('super')
     document.getElementById('nav-all-scores').style.display = 'block'
     document.getElementById('nav-manage-admins').style.display = 'block'
+    document.getElementById('nav-section-admin').style.display = 'block'
   } else {
     roleEl.textContent = 'أدمن'
     document.getElementById('nav-manage-admins').style.display = 'none'
@@ -908,6 +912,26 @@ function exportExcel() {
   const wb = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(wb, ws, 'التقييمات')
   XLSX.writeFile(wb, 'تقييمات_طلبة_الطب.xlsx')
+}
+
+async function exportStudents() {
+  const { data, error } = await db
+    .from('students')
+    .select('*, groups(name)')
+    .order('group_id')
+  if (error || !data || data.length === 0) {
+    alert('لا يوجد طلبة في قاعدة البيانات')
+    return
+  }
+  const rows = data.map(s => ({
+    'الاسم': s.name,
+    'الرقم الجامعي': s.student_number || '-',
+    'المجموعة': s.groups?.name || '-'
+  }))
+  const ws = XLSX.utils.json_to_sheet(rows)
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, 'الطلبة')
+  XLSX.writeFile(wb, 'قائمة_طلبة_الطب.xlsx')
 }
 
 // ============ NAVIGATION ============
