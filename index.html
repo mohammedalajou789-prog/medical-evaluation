@@ -641,7 +641,7 @@ async function loadStudents(existingSessionId = null) {
       <div id="score-wrap-${s.id}" style="display:${attended ? 'flex' : 'none'}; align-items:center; gap:6px;">
         <input type="number" class="score-input" id="score-${s.id}" 
           min="0" max="10" step="0.5" placeholder="0-10" value="${score}"
-          style="width:70px;">
+          style="width:70px;" oninput="if(this.value>10)this.value=10; if(this.value<0)this.value=0;">
         <span style="font-size:12px; color:var(--gray-400);">/10</span>
       </div>
     </div>`
